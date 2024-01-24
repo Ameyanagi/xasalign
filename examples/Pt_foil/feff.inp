@@ -1,0 +1,97 @@
+TITLE Pt ref
+
+*  Pt L3 edge energy = 11564 eV
+ EDGE      L3
+ S02       1.0
+
+ *         pot    xsph  fms   paths genfmt ff2chi
+ CONTROL   1      1     1     1     1      1
+ PRINT     1      0     0     0     0      0
+
+ *         ixc    Vr0   Vi0   ixc0     *** ixc=0 means to use Hedin-Lundqvist
+ EXCHANGE  0      1     1     2
+                                           *** Radius for self-consistent pots (2 shells is a good choice)
+ *         rfms  lfms1   nscmt   ca    nmix   *** rfms include 30 atoms, larger than second shell lscf = 0 for a solid, 1 for a molecule nscmt is the mximum number of iterations the potential will be recalculated usually 10, ca is a convergence accelerator factor typical value is 0.2. nmix is used when SCF does not converge.
+ SCF       5.0   0       20      0.2
+
+ *         xkmax    xkstep   vixan    *** Upper limit of XANES calculation.
+ XANES     6.0      0.05     0.3
+
+ *         rfms     lfms2    minv     toler1    toler2    rdirec      *** Radius for Full Mult. Scatt. needs 50-150 atoms.  lfms = 0 for a solid, 1 for a molecule. minv for = 2 for Lanczos recursion method for large clusters.
+ FMS       9.0      0        0        0.001     0.001
+
+ *         emin  emax   eimag   *** Energy grid over which to calculate DOS functions
+ * LDOS      -30   20     0.1
+
+               *** for EXAFS: RPATH 5.0 and uncomment the EXAFS card
+ * RPATH     5.0
+ * EXAFS     20
+  * POLARIZATION  0   0   0
+
+ POTENTIALS
+ *   ipot   Z  element        lmax1 lmx2   xnatph(stoichiometry) ***lmax1 and lmax2 will use default when it is -1
+     0     78     Pt           3       3       0.01
+     1     78     Pt           3       3       1
+
+EGRID
+e_grid -50 -10.0 1
+e_grid -10 10.0 0.2
+k_grid last 6 0.05
+
+ ATOMS                  * this list contains 55 atoms
+ *   x          y          z     ipot tag           distance
+    0.00000    0.00000    0.00000  0  Pt            0.00000
+    1.95600    1.95600    0.00000  1  Pt.1          2.76620
+   -1.95600    1.95600    0.00000  1  Pt.1          2.76620
+    1.95600   -1.95600    0.00000  1  Pt.1          2.76620
+   -1.95600   -1.95600    0.00000  1  Pt.1          2.76620
+    1.95600    0.00000    1.95600  1  Pt.1          2.76620
+   -1.95600    0.00000    1.95600  1  Pt.1          2.76620
+    0.00000    1.95600    1.95600  1  Pt.1          2.76620
+    0.00000   -1.95600    1.95600  1  Pt.1          2.76620
+    1.95600    0.00000   -1.95600  1  Pt.1          2.76620
+   -1.95600    0.00000   -1.95600  1  Pt.1          2.76620
+    0.00000    1.95600   -1.95600  1  Pt.1          2.76620
+    0.00000   -1.95600   -1.95600  1  Pt.1          2.76620
+    3.91200    0.00000    0.00000  1  Pt.2          3.91200
+   -3.91200    0.00000    0.00000  1  Pt.2          3.91200
+    0.00000    3.91200    0.00000  1  Pt.2          3.91200
+    0.00000   -3.91200    0.00000  1  Pt.2          3.91200
+    0.00000    0.00000    3.91200  1  Pt.2          3.91200
+    0.00000    0.00000   -3.91200  1  Pt.2          3.91200
+    3.91200    1.95600    1.95600  1  Pt.3          4.79120
+   -3.91200    1.95600    1.95600  1  Pt.3          4.79120
+    1.95600    3.91200    1.95600  1  Pt.3          4.79120
+   -1.95600    3.91200    1.95600  1  Pt.3          4.79120
+    3.91200   -1.95600    1.95600  1  Pt.3          4.79120
+   -3.91200   -1.95600    1.95600  1  Pt.3          4.79120
+    1.95600   -3.91200    1.95600  1  Pt.3          4.79120
+   -1.95600   -3.91200    1.95600  1  Pt.3          4.79120
+    1.95600    1.95600    3.91200  1  Pt.3          4.79120
+   -1.95600    1.95600    3.91200  1  Pt.3          4.79120
+    1.95600   -1.95600    3.91200  1  Pt.3          4.79120
+   -1.95600   -1.95600    3.91200  1  Pt.3          4.79120
+    3.91200    1.95600   -1.95600  1  Pt.3          4.79120
+   -3.91200    1.95600   -1.95600  1  Pt.3          4.79120
+    1.95600    3.91200   -1.95600  1  Pt.3          4.79120
+   -1.95600    3.91200   -1.95600  1  Pt.3          4.79120
+    3.91200   -1.95600   -1.95600  1  Pt.3          4.79120
+   -3.91200   -1.95600   -1.95600  1  Pt.3          4.79120
+    1.95600   -3.91200   -1.95600  1  Pt.3          4.79120
+   -1.95600   -3.91200   -1.95600  1  Pt.3          4.79120
+    1.95600    1.95600   -3.91200  1  Pt.3          4.79120
+   -1.95600    1.95600   -3.91200  1  Pt.3          4.79120
+    1.95600   -1.95600   -3.91200  1  Pt.3          4.79120
+   -1.95600   -1.95600   -3.91200  1  Pt.3          4.79120
+    3.91200    3.91200    0.00000  1  Pt.4          5.53240
+   -3.91200    3.91200    0.00000  1  Pt.4          5.53240
+    3.91200   -3.91200    0.00000  1  Pt.4          5.53240
+   -3.91200   -3.91200    0.00000  1  Pt.4          5.53240
+    3.91200    0.00000    3.91200  1  Pt.4          5.53240
+   -3.91200    0.00000    3.91200  1  Pt.4          5.53240
+    0.00000    3.91200    3.91200  1  Pt.4          5.53240
+    0.00000   -3.91200    3.91200  1  Pt.4          5.53240
+    3.91200    0.00000   -3.91200  1  Pt.4          5.53240
+   -3.91200    0.00000   -3.91200  1  Pt.4          5.53240
+    0.00000    3.91200   -3.91200  1  Pt.4          5.53240
+    0.00000   -3.91200   -3.91200  1  Pt.4          5.53240

@@ -1,0 +1,10 @@
+Launching FEFF version FEFF 10.0.0
+Resetting lmaxsc to 2 for iph =    0.  Use  UNFREEZE to prevent this.
+Resetting lmaxsc to 2 for iph =    1.  Use  UNFREEZE to prevent this.
+Core hole lifetime is   5.171 eV.
+Your calculation:
+ Pt ref
+Pt L3 edge XANES using FSR corehole.
+Using:     * Self-Consistent Field potentials
+Using cards:   ATOMS CONTROL EXCHANGE TITLE PRINT POTENTIALS XANES EDGE SCF FMS S02 EGRID
+

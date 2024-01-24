@@ -1,0 +1,165 @@
+"""Main module."""
+
+
+import scipy.optimize
+import numpy as np
+import spdist
+from scipy.optimize import least_squares
+
+import matplotlib.pyplot as plt
+
+
+def _residue(
+    p: list,
+    spectrum_x: np.ndarray,
+    spectrum_y: np.ndarray,
+    ref_spectrum_x: np.ndarray,
+    ref_spectrum_y: np.ndarray,
+):
+    """Residue to calculate the shift and scale of the spectrum, with respect to the reference spectrum
+
+    Args:
+        p(list): shift and scale
+        spectrum_x(np.ndarray): energy grid of the spectrum
+        spectrum_y(np.ndarray): mu of the spectrum
+        ref_spectrum_x(np.ndarray): energy grid of the reference spectrum
+        ref_spectrum_y(np.ndarray): mu of the reference spectrum
+
+    Returns:
+        residue(np.ndarray): residue of the spectrum and the reference spectrum
+    """
+
+    print(p)
+    print(
+        spdist.spdist(
+            spectrum_x, spectrum_y, ref_spectrum_x - p[0], ref_spectrum_y / p[1]
+        )
+    )
+    return spdist.spdist(
+        spectrum_x, spectrum_y, ref_spectrum_x - p[0], ref_spectrum_y / p[1]
+    )
+
+
+def _residue_MSE(
+    p: list,
+    spectrum_x: np.ndarray,
+    spectrum_y: np.ndarray,
+    ref_spectrum_x: np.ndarray,
+    ref_spectrum_y: np.ndarray,
+):
+    return np.sum(
+        (
+            spectrum_y
+            - np.interp(spectrum_x, ref_spectrum_x - p[0], ref_spectrum_y / p[1])
+        )
+        ** 2
+    )
+
+
+def calc_shift_scale(
+    spectrum_x, spectrum_y, ref_spectrum_x, ref_spectrum_y, fit_range=None, max_shift=20
+):
+    if fit_range:
+        spectrum_x = spectrum_x[
+            np.where((spectrum_x >= fit_range[0]) & (spectrum_x <= fit_range[1]))
+        ]
+        spectrum_y = spectrum_y[
+            np.where((spectrum_x >= fit_range[0]) & (spectrum_x <= fit_range[1]))
+        ]
+        ref_spectrum_x = ref_spectrum_x[
+            np.where(
+                (ref_spectrum_x >= fit_range[0] - max_shift)
+                & (ref_spectrum_x <= fit_range[1] + max_shift)
+            )
+        ]
+        ref_spectrum_y = ref_spectrum_y[
+            np.where(
+                (ref_spectrum_x >= fit_range[0] - max_shift)
+                & (ref_spectrum_x <= fit_range[1] + max_shift)
+            )
+        ]
+
+    p0 = [0, 1]
+
+    residue = lambda p: _residue(
+        p, spectrum_x, spectrum_y, ref_spectrum_x, ref_spectrum_y
+    )
+    results = least_squares(residue, p0)
+
+    shift, scale = results.x
+    loss = results.cost
+
+    return shift, scale, loss
+
+
+def calc_shift_scale_MSE(
+    spectrum_x, spectrum_y, ref_spectrum_x, ref_spectrum_y, fit_range=None, max_shift=20
+):
+    if fit_range:
+        spectrum_x = spectrum_x[
+            np.where((spectrum_x >= fit_range[0]) & (spectrum_x <= fit_range[1]))
+        ]
+        spectrum_y = spectrum_y[
+            np.where((spectrum_x >= fit_range[0]) & (spectrum_x <= fit_range[1]))
+        ]
+        ref_spectrum_x = ref_spectrum_x[
+            np.where(
+                (ref_spectrum_x >= fit_range[0] - max_shift)
+                & (ref_spectrum_x <= fit_range[1] + max_shift)
+            )
+        ]
+        ref_spectrum_y = ref_spectrum_y[
+            np.where(
+                (ref_spectrum_x >= fit_range[0] - max_shift)
+                & (ref_spectrum_x <= fit_range[1] + max_shift)
+            )
+        ]
+
+    p0 = [0, 1]
+
+    residue = lambda p: _residue_MSE(
+        p, spectrum_x, spectrum_y, ref_spectrum_x, ref_spectrum_y
+    )
+    results = least_squares(residue, p0)
+
+    shift, scale = results.x
+    loss = results.cost
+
+    return shift, scale, loss
+
+
+def test():
+    exp_data = np.loadtxt("examples/Ptfoil.nor")
+    theoretical_data = np.loadtxt("examples/Pt_foil/xmu.dat")
+
+    ref_spectrum_x = exp_data[:, 0]
+    ref_spectrum_y = exp_data[:, 1]
+
+    spectrum_x = theoretical_data[:, 0]
+    spectrum_y = theoretical_data[:, 3]
+
+    spectrum_x = spectrum_x - 5
+    spectrum_y = spectrum_y / 1.1
+
+    e0 = 11564
+    fit_range = [e0 - 20, e0 + 80]
+
+    shift, scale, loss = calc_shift_scale(
+        spectrum_x, spectrum_y, ref_spectrum_x, ref_spectrum_y, fit_range=fit_range
+    )
+
+    fig, ax = plt.subplots(1, 1, figsize=(3, 3))
+
+    ax.plot(ref_spectrum_x, ref_spectrum_y, label="Pt foil(exp)")
+    ax.plot(spectrum_x, spectrum_y, label="Pt foil(feff)")
+
+    ax.plot(spectrum_x + shift, spectrum_y * scale, label="Pt foil(feff: scale spdist)")
+    ax.set_xlim(*fit_range)
+    ax.legend()
+
+    fig.savefig("./examples/Pt_foil_comparison.png", dpi=300)
+    fig.show()
+
+
+if __name__ == "__main__":
+    test()
