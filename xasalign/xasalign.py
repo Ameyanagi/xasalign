@@ -1,11 +1,10 @@
 """Main module."""
 
 
-import scipy.optimize
 import numpy as np
 import spdist
 import scipy.optimize as opt
-from scipy.optimize import least_squares, leastsq
+from scipy.optimize import least_squares
 
 import matplotlib.pyplot as plt
 
@@ -19,10 +18,11 @@ def _residue(
     ref_spectrum_y: np.ndarray,
     fit_range: list | None = None,
 ):
-    """Residue to calculate the shift and scale of the spectrum, with respect to the reference spectrum
+    """Residue to calculate the shift and scale of the spectrum, with respect to the reference spectrum using spdist+MAE as the metric
 
     Args:
         p(list): shift and scale
+        energy_grid: energy grid for the metric calculation. This will be used for the interpolation of the spectrum
         spectrum_x(np.ndarray): energy grid of the spectrum
         spectrum_y(np.ndarray): mu of the spectrum
         ref_spectrum_x(np.ndarray): energy grid of the reference spectrum
@@ -62,6 +62,20 @@ def _residue_MSE(
     ref_spectrum_y: np.ndarray,
     fit_range: list | None = None,
 ):
+    """Residue to calculate the shift and scale of the spectrum, with respect to the reference spectrum_using MSE as the metric
+
+    Args:
+        p(list): shift and scale
+        energy_grid: energy grid for the metric calculation. This will be used for the interpolation of the spectrum
+        spectrum_x(np.ndarray): energy grid of the spectrum
+        spectrum_y(np.ndarray): mu of the spectrum
+        ref_spectrum_x(np.ndarray): energy grid of the reference spectrum
+        ref_spectrum_y(np.ndarray): mu of the reference spectrum
+
+    Returns:
+        residue(np.ndarray): residue of the spectrum and the reference spectrum
+    """
+
     # print(len(spectrum_y))
     spectrum_y = np.interp(energy_grid, spectrum_x + p[0], spectrum_y * p[1])
 
@@ -91,6 +105,23 @@ def calc_shift_scale(
     fit_range=None,
     max_shift=20,
 ):
+    """Calculate the shift and scale of the spectrum, with respect to the reference spectrum using spdist+MAE as the metric
+
+    Args:
+        energy_grid: energy grid for the metric calculation. This will be used for the interpolation of the spectrum
+        spectrum_x(np.ndarray): energy grid of the spectrum
+        spectrum_y(np.ndarray): mu of the spectrum
+        ref_spectrum_x(np.ndarray): energy grid of the reference spectrum
+        ref_spectrum_y(np.ndarray): mu of the reference spectrum
+        fit_range(list): the fitting range for the metric calculation
+        max_shift(float): the maximum shift of the spectrum
+
+    Returns:
+        shift(float): shift of the spectrum
+        scale(float): scale of the spectrum
+        loss(float): loss of the spectrum
+    """
+
     if fit_range:
         index = np.where(
             (ref_spectrum_x >= fit_range[0] - max_shift)
@@ -111,22 +142,6 @@ def calc_shift_scale(
         fit_range,
     )
 
-    # # results = least_squares(residue, p0, method="lm")
-    # # results = leastsq(residue, p0)
-    # # 0
-    # # the bounds
-    # xmin = [-20.0, 0.2]
-    # xmax = [20.0, 1.2]
-    #
-    # # rewrite the bounds in the way required by L-BFGS-B
-    # bounds = [(low, high) for low, high in zip(xmin, xmax)]
-    #
-    # # use method L-BFGS-B because the problem is smooth and bounded
-    # minimizer_kwargs = dict(method="L-BFGS-B", bounds=bounds)
-    # optimization_algorithm = opt.basinhopping(
-    #     residue, p0, minimizer_kwargs=minimizer_kwargs, niter=200
-    # )
-
     optimization_algorithm = opt.shgo(residue, [(-20, 20), (0.5, 1.5)])
 
     shift, scale = optimization_algorithm.x
@@ -145,6 +160,22 @@ def calc_shift_scale_MSE(
     fit_range=None,
     max_shift=20,
 ):
+    """Calculate the shift and scale of the spectrum, with respect to the reference spectrum using MSE as the metric
+
+    Args:
+        energy_grid: energy grid for the metric calculation. This will be used for the interpolation of the spectrum
+        spectrum_x(np.ndarray): energy grid of the spectrum
+        spectrum_y(np.ndarray): mu of the spectrum
+        ref_spectrum_x(np.ndarray): energy grid of the reference spectrum
+        ref_spectrum_y(np.ndarray): mu of the reference spectrum
+        fit_range(list): the fitting range for the metric calculation
+        max_shift(float): the maximum shift of the spectrum
+
+    Retruns:
+        shift(float): shift of the spectrum
+        scale(float): scale of the spectrum
+        loss(float): loss of the spectrum
+    """
     if fit_range:
         index = np.where(
             (ref_spectrum_x >= fit_range[0] - max_shift)
@@ -174,6 +205,7 @@ def calc_shift_scale_MSE(
 
 
 def test():
+    """Test function for the module"""
     exp_data = np.loadtxt("examples/Ptfoil.nor")
     theoretical_data = np.loadtxt("examples/Pt_foil/xmu.dat")
 
